@@ -39,13 +39,13 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
   const mainCtx = mainTexture.getContext()
   mainCtx.fillStyle = `rgba(${Math.floor(skinColor.r * 255)}, ${Math.floor(skinColor.g * 255)}, ${Math.floor(
     skinColor.b * 255
-  )}, 0.1)`
+  )}, 1)`
 
   mainCtx.fillRect(0, 0, 512, 512)
   mainTexture.update()
 
   // Pass other uniforms like alpha
-  skinShaderMaterial.backFaceCulling = false
+  // skinShaderMaterial.backFaceCulling = false
   skinShaderMaterial.setTexture('sampler_MainTex', mainTexture)
   // skinShaderMaterial.setTexture('sampler_NormalMap', normalMap)
   // skinShaderMaterial.setFloat('sampler_NormalMap', 0.0)
@@ -91,47 +91,6 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
       // add all assets to  scene and create shaderMaterial based on bodyPart
       for (const asset of assets) {
         asset.container.addAllToScene()
-      }
-
-      for (const mesh of scene.meshes) {
-        const name = mesh.name.toLowerCase()
-        mesh.computeBonesUsingShaders = false
-        if (name.endsWith('ubody_basemesh')) {
-          mesh.setEnabled(true)
-          mesh.material = skinShaderMaterial
-        }
-        if (name.endsWith('lbody_basemesh')) {
-          mesh.setEnabled(true)
-          mesh.material = skinShaderMaterial
-        }
-        if (name.endsWith('feet_basemesh')) {
-          mesh.setEnabled(true)
-          mesh.material = skinShaderMaterial
-        }
-        if (name.endsWith('head')) {
-          mesh.setEnabled(true)
-          mesh.material = skinShaderMaterial
-        }
-        if (name.endsWith('head_basemesh')) {
-          mesh.setEnabled(true)
-          mesh.material = skinShaderMaterial
-        }
-        if (name.endsWith('mask_eyes')) {
-          mesh.setEnabled(true)
-          mesh.material = skinShaderMaterial
-        }
-        if (name.endsWith('mask_eyebrows')) {
-          mesh.setEnabled(true)
-          mesh.material = skinShaderMaterial
-        }
-        if (name.endsWith('mask_mouth')) {
-          mesh.setEnabled(true)
-          mesh.material = skinShaderMaterial
-        }
-        if (name.endsWith('hands_basemesh')) {
-          mesh.setEnabled(true)
-          mesh.material = skinShaderMaterial
-        }
       }
 
       // build avatar
