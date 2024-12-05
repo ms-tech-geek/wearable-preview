@@ -45,7 +45,6 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
   mainTexture.update()
 
   // Pass other uniforms like alpha
-  skinShaderMaterial.alphaMode = 1;
   skinShaderMaterial.backFaceCulling = false
   skinShaderMaterial.setTexture('sampler_MainTex', mainTexture)
   // skinShaderMaterial.setTexture('sampler_NormalMap', normalMap)
@@ -200,39 +199,39 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
           scene.render()
           break
         case 'new-avatar':
-          // for (const mesh of scene.meshes) {
-          //   switch (mesh?.id) {
-          //     case 'M_Hair_Standard_01':
-          //       mesh.material = hairShaderMaterial
-          //       break
-          //     case 'M_uBody_Hoodie_01':
-          //       mesh.material = upperBodyShaderMaterial
-          //       break
-          //     case 'M_uBody_Hoodie_02':
-          //       mesh.material = upperBodyShaderMaterial
-          //       break
-          //     case 'M_lBody_LongPants_01_primitive0':
-          //       mesh.material = lowerBodyShaderMaterial
-          //       break
-          //     case 'M_lBody_LongPants_01_primitive1':
-          //       mesh.material = lowerBodyShaderMaterial
-          //       break
-          //     case 'M_Feet_Sneakers_01_primitive0':
-          //       mesh.material = feetShaderMaterial
-          //       break
-          //     case 'M_Feet_Sneakers_02':
-          //       mesh.material = feetShaderMaterial
-          //       break
-          //     // case 'ShapeB_Head_BaseMesh':
-          //     //   mesh.material = upperBodyShaderMaterial
-          //     //   break;
+          for (const mesh of scene.meshes) {
+            switch (mesh?.id) {
+              case 'M_Hair_Standard_01':
+                mesh.material = hairShaderMaterial
+                break
+              case 'M_uBody_Hoodie_01':
+                mesh.material = upperBodyShaderMaterial
+                break
+              case 'M_uBody_Hoodie_02':
+                mesh.material = upperBodyShaderMaterial
+                break
+              case 'M_lBody_LongPants_01_primitive0':
+                mesh.material = lowerBodyShaderMaterial
+                break
+              case 'M_lBody_LongPants_01_primitive1':
+                mesh.material = lowerBodyShaderMaterial
+                break
+              case 'M_Feet_Sneakers_01_primitive0':
+                mesh.material = feetShaderMaterial
+                break
+              case 'M_Feet_Sneakers_02':
+                mesh.material = feetShaderMaterial
+                break
+              // case 'ShapeB_Head_BaseMesh':
+              //   mesh.material = upperBodyShaderMaterial
+              //   break;
 
-          //     default:
-          //       // Optional: Handle cases where no match is found
-          //       break
-          //   }
-          //   mesh.computeBonesUsingShaders = false
-          // }
+              default:
+                // Optional: Handle cases where no match is found
+                break
+            }
+            mesh.computeBonesUsingShaders = false
+          }
           scene.render()
           break
         case 'both':
