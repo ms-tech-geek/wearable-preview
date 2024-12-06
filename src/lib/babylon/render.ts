@@ -1,4 +1,4 @@
-import { Color3, Color4, DynamicTexture, Texture } from '@babylonjs/core'
+import { Color4, Texture } from '@babylonjs/core'
 import { PreviewConfig, PreviewType, BodyShape, IPreviewController, IEmoteController } from '@dcl/schemas'
 import { createInvalidEmoteController, isEmote } from '../emote'
 import { getBodyShape } from './body'
