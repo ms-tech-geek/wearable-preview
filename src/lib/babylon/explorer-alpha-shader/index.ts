@@ -27,7 +27,7 @@ export function createShader(scene: Scene, shaderId: string) {
         'sampler_NormalMap',
         'sampler_Emissive_Tex',
       ],
-      samplers: ['sampler_MainTex'],
+      samplers: ['sampler_MainTex', 'sampler_NormalMap', 'sampler_Emissive_Tex'],
       defines: [],
       // needAlphaBlending: true,
       shaderLanguage: ShaderLanguage.GLSL,

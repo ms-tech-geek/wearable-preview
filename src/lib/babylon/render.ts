@@ -32,23 +32,27 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
 
   const outlineShaderMaterial = createOutlineShader(scene, 'outline')
 
-  // skin color
-  const skinColor = Color3.FromHexString(config.skin).toLinearSpace()
-  const mainTexture = new DynamicTexture('mainTex', { width: 512, height: 512 }, scene)
-  const mainCtx = mainTexture.getContext()
+  // upperBody
+  const upperMainTexture = new Texture('/upper-MainTex', scene)
+  // const upperNormalTexture = new Texture('/pants-normal', scene)
+  upperBodyShaderMaterial.setTexture('sampler_MainTex', upperMainTexture)
+  upperBodyShaderMaterial.setTexture('sampler_Emissive_Tex', upperMainTexture)
 
-  const mainTextureImage = new Texture('/pants.png', scene)
+  // Lower Body
+  const pantsMainTex = new Texture('/pants-maintex', scene)
+  const pantsNormalTexture = new Texture('/pants-normal', scene)
+  lowerBodyShaderMaterial.setTexture('sampler_MainTex', pantsMainTex)
+  lowerBodyShaderMaterial.setTexture('sampler_NormalMap', pantsNormalTexture)
 
-  mainCtx.fillRect(0, 0, 512, 512)
-  mainTexture.update()
+  // feet Part
+  const feetMainTex = new Texture('/shoes-mainTex', scene)
+  const feetNormalTexture = new Texture('/shoes-normalMap', scene)
+  feetShaderMaterial.setTexture('sampler_MainTex', feetMainTex)
+  feetShaderMaterial.setTexture('sampler_NormalMap', feetNormalTexture)
 
-  // Pass other uniforms like alpha
-  skinShaderMaterial.backFaceCulling = false
-  skinShaderMaterial.setTexture('sampler_MainTex', mainTextureImage)
-  lowerBodyShaderMaterial.setTexture('sampler_MainTex', mainTextureImage)
-  // skinShaderMaterial.setTexture('sampler_NormalMap', normalMap).
-  // skinShaderMaterial.setFloat('sampler_NormalMap', 0.0)
-  // skinShaderMaterial.setTexture('sampler_Emissive_Tex', emissiveTex)
+  // skin 
+  const skinTexture = new Texture('/skin-Normal', scene)
+  skinShaderMaterial.setTexture('sampler_MainTex', skinTexture)
 
   try {
     // setup the mappings for all the contents
@@ -94,46 +98,46 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
         asset.container.addAllToScene()
       }
 
-      // for (const mesh of scene.meshes) {
-      //   const name = mesh.name.toLowerCase()
-      //   mesh.computeBonesUsingShaders = false
-      //   if (name.endsWith('ubody_basemesh')) {
-      //     mesh.setEnabled(true)
-      //     mesh.material = skinShaderMaterial
-      //   }
-      //   if (name.endsWith('lbody_basemesh')) {
-      //     mesh.setEnabled(true)
-      //     mesh.material = skinShaderMaterial
-      //   }
-      //   if (name.endsWith('feet_basemesh')) {
-      //     mesh.setEnabled(true)
-      //     mesh.material = skinShaderMaterial
-      //   }
-      //   if (name.endsWith('head')) {
-      //     mesh.setEnabled(true)
-      //     mesh.material = skinShaderMaterial
-      //   }
-      //   if (name.endsWith('head_basemesh')) {
-      //     mesh.setEnabled(true)
-      //     mesh.material = skinShaderMaterial
-      //   }
-      //   if (name.endsWith('mask_eyes')) {
-      //     mesh.setEnabled(true)
-      //     mesh.material = skinShaderMaterial
-      //   }
-      //   if (name.endsWith('mask_eyebrows')) {
-      //     mesh.setEnabled(true)
-      //     mesh.material = skinShaderMaterial
-      //   }
-      //   if (name.endsWith('mask_mouth')) {
-      //     mesh.setEnabled(true)
-      //     mesh.material = skinShaderMaterial
-      //   }
-      //   if (name.endsWith('hands_basemesh')) {
-      //     mesh.setEnabled(true)
-      //     mesh.material = skinShaderMaterial
-      //   }
-      // }
+      for (const mesh of scene.meshes) {
+        const name = mesh.name.toLowerCase()
+        mesh.computeBonesUsingShaders = false
+        if (name.endsWith('ubody_basemesh')) {
+          mesh.setEnabled(false)
+          mesh.material = skinShaderMaterial
+        }
+        if (name.endsWith('lbody_basemesh')) {
+          mesh.setEnabled(false)
+          mesh.material = skinShaderMaterial
+        }
+        if (name.endsWith('feet_basemesh')) {
+          mesh.setEnabled(false)
+          mesh.material = skinShaderMaterial
+        }
+        if (name.endsWith('head')) {
+          mesh.setEnabled(true)
+          mesh.material = skinShaderMaterial
+        }
+        if (name.endsWith('head_basemesh')) {
+          mesh.setEnabled(true)
+          mesh.material = skinShaderMaterial
+        }
+        if (name.endsWith('mask_eyes')) {
+          mesh.setEnabled(true)
+          mesh.material = skinShaderMaterial
+        }
+        if (name.endsWith('mask_eyebrows')) {
+          mesh.setEnabled(true)
+          mesh.material = skinShaderMaterial
+        }
+        if (name.endsWith('mask_mouth')) {
+          mesh.setEnabled(true)
+          mesh.material = skinShaderMaterial
+        }
+        if (name.endsWith('hands_basemesh')) {
+          mesh.setEnabled(true)
+          mesh.material = skinShaderMaterial
+        }
+      }
 
       // build avatar
       const bodyShape = getBodyShape(assets)
@@ -202,30 +206,27 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
         case 'new-avatar':
           for (const mesh of scene.meshes) {
             switch (mesh?.id) {
-              // case 'M_Hair_Standard_01':
-              //   mesh.material = hairShaderMaterial
-              //   break
-              // case 'M_uBody_Hoodie_01':
-              //   mesh.material = upperBodyShaderMaterial
-              //   break
-              // case 'M_uBody_Hoodie_02':
-              //   mesh.material = upperBodyShaderMaterial
-              //   break
+              case 'M_Hair_Standard_01':
+                mesh.material = hairShaderMaterial
+                break
+              case 'M_uBody_Hoodie_01':
+                mesh.material = upperBodyShaderMaterial
+                break
+              case 'M_uBody_Hoodie_02':
+                mesh.material = upperBodyShaderMaterial
+                break
               case 'M_lBody_LongPants_01_primitive0':
                 mesh.material = lowerBodyShaderMaterial
                 break
               case 'M_lBody_LongPants_01_primitive1':
                 mesh.material = lowerBodyShaderMaterial
                 break
-              // case 'M_Feet_Sneakers_01_primitive0':
-              //   mesh.material = feetShaderMaterial
-              //   break
-              // case 'M_Feet_Sneakers_02':
-              //   mesh.material = feetShaderMaterial
-              //   break
-              // case 'ShapeB_Head_BaseMesh':
-              //   mesh.material = upperBodyShaderMaterial
-              //   break;
+              case 'M_Feet_Sneakers_01_primitive0':
+                mesh.material = feetShaderMaterial
+                break
+              case 'M_Feet_Sneakers_02':
+                mesh.material = feetShaderMaterial
+                break
 
               default:
                 // Optional: Handle cases where no match is found
