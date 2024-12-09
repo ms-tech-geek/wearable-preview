@@ -22,37 +22,12 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
   // create the root scene
   const [scene, sceneController, engine] = await createScene(canvas, config)
 
-  // create shaders - feet , hands , body , pants , hairs
   const hairShaderMaterial = createShader(scene, 'hair')
   const upperBodyShaderMaterial = createShader(scene, 'hoodie')
   const lowerBodyShaderMaterial = createShader(scene, 'pants')
   const feetShaderMaterial = createShader(scene, 'shoes')
-
   const skinShaderMaterial = createShader(scene, 'skin')
-
   const outlineShaderMaterial = createOutlineShader(scene, 'outline')
-
-  // upperBody
-  const upperMainTexture = new Texture('/upper-MainTex', scene)
-  // const upperNormalTexture = new Texture('/pants-normal', scene)
-  upperBodyShaderMaterial.setTexture('sampler_MainTex', upperMainTexture)
-  upperBodyShaderMaterial.setTexture('sampler_Emissive_Tex', upperMainTexture)
-
-  // Lower Body
-  const pantsMainTex = new Texture('/pants-maintex', scene)
-  const pantsNormalTexture = new Texture('/pants-normal', scene)
-  lowerBodyShaderMaterial.setTexture('sampler_MainTex', pantsMainTex)
-  lowerBodyShaderMaterial.setTexture('sampler_NormalMap', pantsNormalTexture)
-
-  // feet Part
-  const feetMainTex = new Texture('/shoes-mainTex', scene)
-  const feetNormalTexture = new Texture('/shoes-normalMap', scene)
-  feetShaderMaterial.setTexture('sampler_MainTex', feetMainTex)
-  feetShaderMaterial.setTexture('sampler_NormalMap', feetNormalTexture)
-
-  // skin 
-  const skinTexture = new Texture('/skin-Normal', scene)
-  skinShaderMaterial.setTexture('sampler_MainTex', skinTexture)
 
   try {
     // setup the mappings for all the contents
@@ -72,17 +47,6 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
       const wearables = Array.from(slots.values())
 
       for (const wearable of wearables.filter(isModel)) {
-        console.log('>>>>>>>>>>>>>>>..', wearable)
-        // if (
-        //   wearable?.data?.category !== 'lower_body' &&
-        //   wearable?.data?.category !== 'hair' &&
-        //   wearable?.data?.category !== 'upper_body'
-        // ) {
-        //   const promise = loadWearable(scene, wearable, config.bodyShape, config.skin, config.hair).catch((error) => {
-        //     console.warn(error.message)
-        //   })
-        //   avatarPromises?.push(promise)
-        // }
         const promise = loadWearable(scene, wearable, config.bodyShape, config.skin, config.hair).catch((error) => {
           console.warn(error.message)
         })
@@ -91,11 +55,41 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
 
       const assets = (await Promise.all(avatarPromises)).filter(isSuccesful)
 
-      console.log('>>>>>>>>>>>>>>>.', assets)
+      console.log(assets);
 
-      // add all assets to  scene and create shaderMaterial based on bodyPart
       for (const asset of assets) {
         asset.container.addAllToScene()
+
+        const category = asset?.wearable?.data?.category
+        const contents = asset?.wearable?.data?.representations[0]?.contents
+
+        switch (category) {
+          case 'body_shape':
+            const bodyShapeContent = contents.find((content) => content?.key === 'Avatar_MaleSkinBase.png')
+            const skinTexture = new Texture(bodyShapeContent?.url || '', scene)
+            skinShaderMaterial.setTexture('sampler_MainTex', skinTexture)
+            break
+          case 'hair':
+            const hairContent = contents.find((content) => content?.key === 'Image_0.png')
+            const hairTexture = new Texture(hairContent?.url || '', scene)
+            hairShaderMaterial.setTexture('sampler_MainTex', hairTexture)
+            break
+          case 'upper_body':
+            const upperContent = contents.find((content) => content?.key === 'basicGreenHoodie_diffuse512.png.png')
+            const upperMainTexture = new Texture(upperContent?.url || '', scene)
+            upperBodyShaderMaterial.setTexture('sampler_MainTex', upperMainTexture)
+            break
+          case 'lower_body':
+            const lowerContent = contents.find((content) => content?.key === 'F_lBody_LongPants_512.png')
+            const pantsMainTex = new Texture(lowerContent?.url || '' , scene)
+            lowerBodyShaderMaterial.setTexture('sampler_MainTex', pantsMainTex)
+            break
+          case 'feet':
+            const feetContent = contents.find((content) => content?.key === 'AvatarWearables_TX.png')
+            const feetMainTex = new Texture(feetContent?.url || '', scene)
+            feetShaderMaterial.setTexture('sampler_MainTex', feetMainTex)
+            break
+        }
       }
 
       for (const mesh of scene.meshes) {
