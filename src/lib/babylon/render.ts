@@ -11,6 +11,7 @@ import { isFacialFeature, isModel, isSuccesful } from './utils'
 import { loadWearable } from './wearable'
 import { createShader } from './explorer-alpha-shader'
 import { createOutlineShader } from './explorer-alpha-shader/OutlineShader'
+import { isTextureFile } from '../representation'
 
 /**
  * Initializes Babylon, creates the scene and loads a list of wearables in it
@@ -65,29 +66,29 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
 
         switch (category) {
           case 'body_shape':
-            const bodyShapeContent = contents.find((content) => content?.key === 'Avatar_MaleSkinBase.png')
+            const bodyShapeContent = contents.find((content) => isTextureFile(content?.key)) 
             const skinTexture = new Texture(bodyShapeContent?.url || '', scene)
-            skinShaderMaterial.setTexture('sampler_MainTex', skinTexture)
+            skinShaderMaterial.setTexture('textureSampler', skinTexture)
             break
           case 'hair':
-            const hairContent = contents.find((content) => content?.key === 'Image_0.png')
+            const hairContent = contents.find((content) => isTextureFile(content?.key)); 
             const hairTexture = new Texture(hairContent?.url || '', scene)
-            hairShaderMaterial.setTexture('sampler_MainTex', hairTexture)
+            hairShaderMaterial.setTexture('textureSampler', hairTexture)
             break
           case 'upper_body':
-            const upperContent = contents.find((content) => content?.key === 'basicGreenHoodie_diffuse512.png.png')
+            const upperContent = contents.find((content) => isTextureFile(content?.key)) 
             const upperMainTexture = new Texture(upperContent?.url || '', scene)
-            upperBodyShaderMaterial.setTexture('sampler_MainTex', upperMainTexture)
+            upperBodyShaderMaterial.setTexture('textureSampler', upperMainTexture)
             break
           case 'lower_body':
-            const lowerContent = contents.find((content) => content?.key === 'F_lBody_LongPants_512.png')
+            const lowerContent = contents.find((content) => isTextureFile(content?.key)) 
             const pantsMainTex = new Texture(lowerContent?.url || '' , scene)
-            lowerBodyShaderMaterial.setTexture('sampler_MainTex', pantsMainTex)
+            lowerBodyShaderMaterial.setTexture('textureSampler', pantsMainTex)
             break
           case 'feet':
-            const feetContent = contents.find((content) => content?.key === 'AvatarWearables_TX.png')
+            const feetContent = contents.find((content) => isTextureFile(content?.key)) 
             const feetMainTex = new Texture(feetContent?.url || '', scene)
-            feetShaderMaterial.setTexture('sampler_MainTex', feetMainTex)
+            feetShaderMaterial.setTexture('textureSampler', feetMainTex)
             break
         }
       }
