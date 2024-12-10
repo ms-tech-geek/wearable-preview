@@ -1,4 +1,4 @@
-import { Color4, Texture } from '@babylonjs/core'
+import { Color3, Color4, DynamicTexture, Scene, Texture } from '@babylonjs/core'
 import { PreviewConfig, PreviewType, BodyShape, IPreviewController, IEmoteController } from '@dcl/schemas'
 import { createInvalidEmoteController, isEmote } from '../emote'
 import { getBodyShape } from './body'
@@ -30,6 +30,20 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
   const skinShaderMaterial = createShader(scene, 'skin')
   const outlineShaderMaterial = createOutlineShader(scene, 'outline')
 
+  function createTexture(scene: Scene, hexColor: string) {
+    const texture = new DynamicTexture('dynamicTexture', { width: 512, height: 512 }, scene)
+    const context = texture.getContext()
+
+    const color = Color3.FromHexString(hexColor).toLinearSpace()
+    context.fillStyle = `rgba(${Math.floor(color.r * 255)}, ${Math.floor(color.g * 255)}, ${Math.floor(
+      color.b * 255
+    )}, 1)`
+    context.fillRect(0, 0, 512, 512)
+    texture.update()
+
+    return texture
+  }
+
   try {
     // setup the mappings for all the contents
     setupMappings(config)
@@ -56,8 +70,6 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
 
       const assets = (await Promise.all(avatarPromises)).filter(isSuccesful)
 
-      console.log(assets);
-
       for (const asset of assets) {
         asset.container.addAllToScene()
 
@@ -66,27 +78,27 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
 
         switch (category) {
           case 'body_shape':
-            const bodyShapeContent = contents.find((content) => isTextureFile(content?.key)) 
-            const skinTexture = new Texture(bodyShapeContent?.url || '', scene)
+            const skinColor = config.skin
+            const skinTexture = createTexture(scene, skinColor)
             skinShaderMaterial.setTexture('textureSampler', skinTexture)
             break
           case 'hair':
-            const hairContent = contents.find((content) => isTextureFile(content?.key)); 
-            const hairTexture = new Texture(hairContent?.url || '', scene)
+            const hairColor = config.hair
+            const hairTexture = createTexture(scene, hairColor)
             hairShaderMaterial.setTexture('textureSampler', hairTexture)
             break
           case 'upper_body':
-            const upperContent = contents.find((content) => isTextureFile(content?.key)) 
+            const upperContent = contents.find((content) => isTextureFile(content?.key))
             const upperMainTexture = new Texture(upperContent?.url || '', scene)
             upperBodyShaderMaterial.setTexture('textureSampler', upperMainTexture)
             break
           case 'lower_body':
-            const lowerContent = contents.find((content) => isTextureFile(content?.key)) 
-            const pantsMainTex = new Texture(lowerContent?.url || '' , scene)
+            const lowerContent = contents.find((content) => isTextureFile(content?.key))
+            const pantsMainTex = new Texture(lowerContent?.url || '', scene)
             lowerBodyShaderMaterial.setTexture('textureSampler', pantsMainTex)
             break
           case 'feet':
-            const feetContent = contents.find((content) => isTextureFile(content?.key)) 
+            const feetContent = contents.find((content) => isTextureFile(content?.key))
             const feetMainTex = new Texture(feetContent?.url || '', scene)
             feetShaderMaterial.setTexture('textureSampler', feetMainTex)
             break
@@ -105,11 +117,11 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
           mesh.material = skinShaderMaterial
         }
         if (name.endsWith('feet_basemesh')) {
-          mesh.setEnabled(false)
+          mesh.setEnabled(true)
           mesh.material = skinShaderMaterial
         }
         if (name.endsWith('head')) {
-          mesh.setEnabled(true)
+          mesh.setEnabled(false)
           mesh.material = skinShaderMaterial
         }
         if (name.endsWith('head_basemesh')) {
