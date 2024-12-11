@@ -3,7 +3,6 @@ import { customFragmentShader } from './fragment'
 import { customVertexShader } from './vertex'
 import { customBasicFragmentShader } from './basic_fragment'
 import { customBasicVertexShader } from './basic_vertex'
-// import { customFragmentShader } from './fragmentTest'
 
 export function createShader(scene: Scene, shaderId: string) {
   Effect.ShadersStore['customVertexShader'] = customBasicVertexShader
