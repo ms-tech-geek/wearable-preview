@@ -78,14 +78,18 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
 
         switch (category) {
           case 'body_shape':
-            const skinColor = config.skin
+            const skinColor = config.skin  
             const skinTexture = createTexture(scene, skinColor)
+            skinShaderMaterial.setInt('materialType', 0)
             skinShaderMaterial.setTexture('textureSampler', skinTexture)
+            skinShaderMaterial.setFloat('alpha', 0.7)
             break
           case 'hair':
             const hairColor = config.hair
             const hairTexture = createTexture(scene, hairColor)
+            hairShaderMaterial.setInt('materialType', 0)
             hairShaderMaterial.setTexture('textureSampler', hairTexture)
+            hairShaderMaterial.setFloat('alpha',1)
             break
           case 'upper_body':
             const upperContent = contents.find((content) => isTextureFile(content?.key))
@@ -101,6 +105,7 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
             const feetContent = contents.find((content) => isTextureFile(content?.key))
             const feetMainTex = new Texture(feetContent?.url || '', scene)
             feetShaderMaterial.setTexture('textureSampler', feetMainTex)
+            feetShaderMaterial.setInt('materialType', 2)
             break
         }
       }
@@ -117,11 +122,11 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
           mesh.material = skinShaderMaterial
         }
         if (name.endsWith('feet_basemesh')) {
-          mesh.setEnabled(true)
+          mesh.setEnabled(false)
           mesh.material = skinShaderMaterial
         }
         if (name.endsWith('head')) {
-          mesh.setEnabled(false)
+          mesh.setEnabled(true)
           mesh.material = skinShaderMaterial
         }
         if (name.endsWith('head_basemesh')) {

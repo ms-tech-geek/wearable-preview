@@ -75,3 +75,7 @@ export function isTexture(representation: WearableRepresentationDefinition) {
 export function isTextureFile(key: string) {
   return key?.endsWith('png') && !key?.includes('Avatar_MaleSkinBase')
 }
+
+export function isTextureSkinFile(key: string) {
+  return key?.endsWith('png')
+}
