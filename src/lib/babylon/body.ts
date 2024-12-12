@@ -24,7 +24,7 @@ export function getBodyShape(assets: Asset[]) {
       mesh.setEnabled(false)
     }
     if (name.endsWith('feet_basemesh') && hideFeet) {
-      mesh.setEnabled(false)
+      mesh.setEnabled(true)
     }
     if (name.endsWith('head') && hideHead) {
       mesh.setEnabled(false)

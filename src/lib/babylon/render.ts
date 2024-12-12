@@ -1,4 +1,4 @@
-import { Color3, Color4, DynamicTexture, Scene, Texture } from '@babylonjs/core'
+import { Color3, Color4, Constants, DynamicTexture, Scene, Texture } from '@babylonjs/core'
 import {
   PreviewConfig,
   PreviewType,
@@ -43,9 +43,11 @@ function createTexture(scene: Scene, hexColor: string) {
 
 function applyMaterialToMeshes(asset: any, material: any, scene: Scene) {
   asset?.container?.meshes.forEach((mesh: any) => {
-    mesh.material = material
-    mesh.computeBonesUsingShaders = false
-    scene.addMesh(mesh)
+    if (mesh?.name !== 'M_Feet_Sneakers_01_primitive1') {
+      mesh.material = material
+      mesh.computeBonesUsingShaders = false
+      scene.addMesh(mesh)
+    }
   })
 }
 
@@ -87,7 +89,7 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
         const category = asset?.wearable?.data?.category
         const contents = asset?.wearable?.data?.representations[0]?.contents
 
-        let material, texture, content;
+        let material, texture, content
 
         switch (category) {
           case WearableCategory.BODY_SHAPE:
@@ -120,8 +122,9 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
             content = contents.find((content) => isTextureFile(content?.key))
             const feetMainTex = new Texture(content?.url || '', scene)
             material = createShaderMaterial(scene, WearableCategory.FEET)
+            material.needDepthPrePass = true
             material.setTexture('textureSampler', feetMainTex)
-            material.setInt('materialType', 2)
+            material.setInt('materialType', 1)
             break
 
           default:
@@ -133,7 +136,7 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
           applyMaterialToMeshes(asset, material, scene)
         }
       }
-      
+
       // build avatar
       const bodyShape = getBodyShape(assets)
       if (bodyShape) {
@@ -182,32 +185,10 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
       'M_Feet_Sneakers_02',
     ]
 
-    // options could be new-avatar, outline, both, old
-    const renderMode: any = 'new-avatar'
+    console.log('scene', scene)
 
     engine.runRenderLoop(() => {
-      switch (renderMode) {
-        case 'outline':
-          outlineShaderMaterial.backFaceCulling = false
-          outlineShaderMaterial.setColor4('_BaseColor', new Color4(1, 0.75, 0.8, 1))
-          for (const mesh of scene.meshes) {
-            if (meshIDsToOutline?.includes(mesh?.id)) {
-              mesh.material = outlineShaderMaterial // Assign the outline shader material
-            }
-          }
-          engine.clear(scene.clearColor, true, true)
-          scene.render()
-          break
-        case 'new-avatar':
-          scene.render()
-          break
-        case 'old':
-          scene.render()
-          break
-        default:
-          console.warn(`Unknown render mode: ${renderMode}`)
-          break
-      }
+      scene.render()
     })
 
     // center the root scene into the camera
