@@ -1,10 +1,8 @@
 import { ShaderMaterial, ShaderLanguage, Scene, Effect } from '@babylonjs/core'
-import { customFragmentShader } from './fragment'
-import { customVertexShader } from './vertex'
 import { customBasicFragmentShader } from './basic_fragment'
 import { customBasicVertexShader } from './basic_vertex'
 
-export function createShader(scene: Scene, shaderId: string) {
+export function createShaderMaterial(scene: Scene, shaderId: string) {
   Effect.ShadersStore['customVertexShader'] = customBasicVertexShader
   Effect.ShadersStore['customFragmentShader'] = customBasicFragmentShader
   return new ShaderMaterial(
