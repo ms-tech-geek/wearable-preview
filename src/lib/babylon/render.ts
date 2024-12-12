@@ -1,4 +1,4 @@
-import { Color3, Color4, Constants, DynamicTexture, Scene, Texture } from '@babylonjs/core'
+import { Color3, Color4, DynamicTexture, Scene, Texture } from '@babylonjs/core'
 import {
   PreviewConfig,
   PreviewType,
@@ -43,11 +43,9 @@ function createTexture(scene: Scene, hexColor: string) {
 
 function applyMaterialToMeshes(asset: any, material: any, scene: Scene) {
   asset?.container?.meshes.forEach((mesh: any) => {
-    if (mesh?.name !== 'M_Feet_Sneakers_01_primitive1') {
       mesh.material = material
       mesh.computeBonesUsingShaders = false
       scene.addMesh(mesh)
-    }
   })
 }
 
@@ -55,6 +53,7 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
   // create the root scene
   const [scene, sceneController, engine] = await createScene(canvas, config)
 
+  // ml2
   const outlineShaderMaterial = createOutlineShader(scene, 'outline')
 
   try {
