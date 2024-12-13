@@ -1,4 +1,4 @@
-import { Color3, Color4, DynamicTexture, Scene, Texture } from '@babylonjs/core'
+import { Color3, Color4, DynamicTexture, Mesh, Scene, Texture } from '@babylonjs/core'
 import {
   PreviewConfig,
   PreviewType,
@@ -19,6 +19,7 @@ import { loadWearable } from './wearable'
 import { createShaderMaterial } from './explorer-alpha-shader'
 import { createOutlineShader } from './explorer-alpha-shader/OutlineShader'
 import { isTextureFile } from '../representation'
+import { randomInt } from 'crypto'
 
 /**
  * Initializes Babylon, creates the scene and loads a list of wearables in it
@@ -41,11 +42,85 @@ function createTexture(scene: Scene, hexColor: string) {
   return texture
 }
 
-function applyMaterialToMeshes(asset: any, material: any, scene: Scene) {
-  asset?.container?.meshes.forEach((mesh: any) => {
-      mesh.material = material
-      mesh.computeBonesUsingShaders = false
-      scene.addMesh(mesh)
+function applyMaterialToMeshes(
+  materials: any[],
+  scene: any,
+  mappings: any,
+  category: string,
+  config: PreviewConfig
+): void {
+  materials.forEach((material) => {
+    // here we need to create the specific material first and then apply to the meshMap of the Material
+    const parsedUrl = new URL(material?.albedoTexture?.url)
+    const pathname = parsedUrl.pathname
+    const fileName = pathname.split('/').pop()
+
+    let texture
+    let shaderMaterial = createShaderMaterial(scene, category + Date.now() + Math.random())
+
+    if (fileName === undefined) return
+    const fileUrl = mappings[fileName]
+
+    switch (category) {
+      case WearableCategory.BODY_SHAPE:
+        texture = createTexture(scene, config.skin)
+        shaderMaterial.setTexture('textureSampler', texture)
+        shaderMaterial.setInt('materialType', 0)
+        shaderMaterial.setFloat('alpha', 0.7)
+        break
+      case WearableCategory.HAIR:
+        texture = createTexture(scene, config.hair)
+        shaderMaterial.setTexture('textureSampler', texture)
+        shaderMaterial.setInt('materialType', 0)
+        shaderMaterial.setFloat('alpha', 1)
+        break
+      case WearableCategory.UPPER_BODY:
+        texture = new Texture(fileUrl || '', scene)
+        shaderMaterial.setTexture('textureSampler', texture)
+        break
+      case WearableCategory.LOWER_BODY:
+        if (fileName?.includes('SkinBase')) {
+          texture = createTexture(scene, config.skin)
+          shaderMaterial.setTexture('textureSampler', texture)
+          shaderMaterial.setInt('materialType', 0)
+          shaderMaterial.setFloat('alpha', 0.7)
+        } else {
+          texture = new Texture(fileUrl || '', scene)
+          shaderMaterial.setTexture('textureSampler', texture)
+          shaderMaterial.setFloat('alpha', 1)
+        }
+        break
+      case WearableCategory.FEET:
+        if (!fileName?.includes('SkinBase')) {
+          texture = new Texture(fileUrl || '', scene)
+          shaderMaterial.setTexture('textureSampler', texture)
+          shaderMaterial.setInt('materialType', 1)
+        } else {
+          texture = createTexture(scene, config.skin)
+          shaderMaterial.setTexture('textureSampler', texture)
+          shaderMaterial.setInt('materialType', 1)
+          shaderMaterial.setFloat('alpha', 0.7)
+        }
+        shaderMaterial.needDepthPrePass = true
+        break
+      default:
+    }
+
+    console.log(shaderMaterial, fileName)
+    const meshMap = material?.meshMap
+    if (meshMap && typeof meshMap === 'object') {
+      for (const mesh of Object.values(meshMap) as any) {
+        if (mesh && mesh.material) {
+          mesh.material = shaderMaterial
+          mesh.computeBonesUsingShaders = false
+          scene.addMesh(mesh)
+        } else {
+          console.warn('Mesh or material not found:', mesh)
+        }
+      }
+    } else {
+      console.warn('meshMap is invalid or not found in material:', material)
+    }
   })
 }
 
@@ -53,12 +128,9 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
   // create the root scene
   const [scene, sceneController, engine] = await createScene(canvas, config)
 
-  // ml2
-  const outlineShaderMaterial = createOutlineShader(scene, 'outline')
-
   try {
     // setup the mappings for all the contents
-    setupMappings(config)
+    const mappings = setupMappings(config)
 
     // emote controller
     let emoteController: IEmoteController
@@ -85,55 +157,7 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
 
       // load assets in scene using shader Material
       for (const asset of assets) {
-        const category = asset?.wearable?.data?.category
-        const contents = asset?.wearable?.data?.representations[0]?.contents
-
-        let material, texture, content
-
-        switch (category) {
-          case WearableCategory.BODY_SHAPE:
-            material = createShaderMaterial(scene, WearableCategory.BODY_SHAPE)
-            texture = createTexture(scene, config.skin)
-            material.setTexture('textureSampler', texture)
-            material.setInt('materialType', 0)
-            material.setFloat('alpha', 0.7)
-            break
-          case WearableCategory.HAIR:
-            material = createShaderMaterial(scene, WearableCategory.HAIR)
-            texture = createTexture(scene, config.hair)
-            material.setTexture('textureSampler', texture)
-            material.setInt('materialType', 0)
-            material.setFloat('alpha', 1)
-            break
-          case WearableCategory.UPPER_BODY:
-            content = contents.find((content) => isTextureFile(content?.key))
-            const upperMainTexture = new Texture(content?.url || '', scene)
-            material = createShaderMaterial(scene, WearableCategory.UPPER_BODY)
-            material.setTexture('textureSampler', upperMainTexture)
-            break
-          case WearableCategory.LOWER_BODY:
-            content = contents.find((content) => isTextureFile(content?.key))
-            const pantsMainTex = new Texture(content?.url || '', scene)
-            material = createShaderMaterial(scene, WearableCategory.LOWER_BODY)
-            material.setTexture('textureSampler', pantsMainTex)
-            break
-          case WearableCategory.FEET:
-            content = contents.find((content) => isTextureFile(content?.key))
-            const feetMainTex = new Texture(content?.url || '', scene)
-            material = createShaderMaterial(scene, WearableCategory.FEET)
-            material.needDepthPrePass = true
-            material.setTexture('textureSampler', feetMainTex)
-            material.setInt('materialType', 1)
-            break
-
-          default:
-            console.warn(`Unhandled category: ${category}`)
-            continue
-        }
-
-        if (material) {
-          applyMaterialToMeshes(asset, material, scene)
-        }
+        applyMaterialToMeshes(asset?.container?.materials, scene, mappings, asset?.wearable?.data?.category, config)
       }
 
       // build avatar
