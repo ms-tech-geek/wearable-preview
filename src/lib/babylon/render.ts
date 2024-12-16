@@ -1,4 +1,4 @@
-import { Color3, Color4, DynamicTexture, Mesh, Scene, Texture } from '@babylonjs/core'
+import { Color3, Color4, DynamicTexture, Scene, Texture } from '@babylonjs/core'
 import {
   PreviewConfig,
   PreviewType,
@@ -17,9 +17,6 @@ import { Asset, center, createScene } from './scene'
 import { isFacialFeature, isModel, isSuccesful } from './utils'
 import { loadWearable } from './wearable'
 import { createShaderMaterial } from './explorer-alpha-shader'
-import { createOutlineShader } from './explorer-alpha-shader/OutlineShader'
-import { isTextureFile } from '../representation'
-import { randomInt } from 'crypto'
 
 /**
  * Initializes Babylon, creates the scene and loads a list of wearables in it
