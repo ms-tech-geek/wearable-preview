@@ -56,4 +56,6 @@ export function setupMappings(config: PreviewConfig) {
       }
     }
   })
+
+  return mappings;
 }
