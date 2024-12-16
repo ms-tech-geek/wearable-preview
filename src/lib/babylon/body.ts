@@ -3,12 +3,11 @@ import { Asset } from './scene'
 import { isHandsBodyPartHidden, isHidden } from './utils'
 
 export function getBodyShape(assets: Asset[]) {
-  const bodyShape = assets.find((part) => part.wearable.data.category === WearableCategory.BODY_SHAPE)
+  const bodyShape = assets?.find((part) => part.wearable.data.category === WearableCategory.BODY_SHAPE)
   if (!bodyShape) {
     return null
   }
 
-  // hide base body parts if necessary
   const hasSkin = assets.some((part) => part.wearable.data.category === WearableCategory.SKIN)
   const hideUpperBody = hasSkin || assets.some(isHidden(WearableCategory.UPPER_BODY))
   const hideLowerBody = hasSkin || assets.some(isHidden(WearableCategory.LOWER_BODY))
