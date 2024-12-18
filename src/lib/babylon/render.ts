@@ -17,13 +17,15 @@ import { Asset, center, createScene } from './scene'
 import { isFacialFeature, isModel, isSuccesful } from './utils'
 import { loadWearable } from './wearable'
 import { createShaderMaterial } from './explorer-alpha-shader'
-
+import createInterface from '../ui/interface'
 /**
  * Initializes Babylon, creates the scene and loads a list of wearables in it
  * @param canvas
  * @param wearables
  * @param options
  */
+
+let materialsUniformsData: any = {}
 
 function createTexture(scene: Scene, hexColor: string) {
   const texture = new DynamicTexture('dynamicTexture', { width: 512, height: 512 }, scene)
@@ -44,7 +46,7 @@ function applyMaterialToMeshes(
   scene: any,
   mappings: any,
   category: string,
-  config: PreviewConfig
+  config: PreviewConfig,
 ): void {
   materials.forEach((material) => {
     // here we need to create the specific material first and then apply to the meshMap of the Material
@@ -53,7 +55,12 @@ function applyMaterialToMeshes(
     const fileName = pathname.split('/').pop()
 
     let texture
-    let shaderMaterial = createShaderMaterial(scene, category + Date.now() + Math.random())
+    let shaderMaterial = createShaderMaterial(scene, material?.id)
+    if (!materialsUniformsData[material?.id]) {
+      materialsUniformsData[material?.id] = {
+        alpha: 1.0, // Default alpha value
+      }
+    }
 
     if (fileName === undefined) return
     const fileUrl = mappings[fileName]
@@ -64,6 +71,8 @@ function applyMaterialToMeshes(
         shaderMaterial.setTexture('textureSampler', texture)
         shaderMaterial.setInt('materialType', 0)
         shaderMaterial.setFloat('alpha', 0.7)
+        // materialsUniformsData[material?.id]['materialType'] = 0;
+        materialsUniformsData[material?.id]['alpha'] = 0.7;
         break
       case WearableCategory.HAIR:
         texture = createTexture(scene, config.hair)
@@ -103,7 +112,6 @@ function applyMaterialToMeshes(
       default:
     }
 
-    console.log(shaderMaterial, fileName)
     const meshMap = material?.meshMap
     if (meshMap && typeof meshMap === 'object') {
       for (const mesh of Object.values(meshMap) as any) {
@@ -154,7 +162,13 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
 
       // load assets in scene using shader Material
       for (const asset of assets) {
-        applyMaterialToMeshes(asset?.container?.materials, scene, mappings, asset?.wearable?.data?.category, config)
+        applyMaterialToMeshes(
+          asset?.container?.materials,
+          scene,
+          mappings,
+          asset?.wearable?.data?.category,
+          config,
+        )
       }
 
       // build avatar
@@ -194,22 +208,11 @@ export async function render(canvas: HTMLCanvasElement, config: PreviewConfig): 
 
     scene.getOutlineRenderer()
 
-    // milestone 2
-    const meshIDsToOutline = [
-      'M_Hair_Standard_01',
-      'M_uBody_Hoodie_01',
-      'M_uBody_Hoodie_02',
-      'M_lBody_LongPants_01_primitive0',
-      'M_lBody_LongPants_01_primitive1',
-      'M_Feet_Sneakers_01_primitive0',
-      'M_Feet_Sneakers_02',
-    ]
-
-    console.log('scene', scene)
-
     engine.runRenderLoop(() => {
       scene.render()
     })
+
+    createInterface(scene, materialsUniformsData, engine)
 
     // center the root scene into the camera
     if (config.centerBoundingBox) {

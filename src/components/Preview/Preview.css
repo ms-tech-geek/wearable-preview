@@ -74,3 +74,39 @@
 .Preview.no-fade-effect .thumbnail {
   transition: none;
 }
+
+
+
+#controlPanel {
+    position: absolute;
+    height: 100px;
+    bottom: 0px;
+    width: 220px;
+    left: 50%;
+    margin-left: -110px;
+    z-index: 10;
+    transition: transform 0.25s ease-in-out;
+    transform: translateY(100px);
+    -webkit-transition: -webkit-transform 0.25s ease-in-out;
+    -webkit-transform: translateY(100px);
+}
+
+#slideInDiv {
+  position: fixed;
+  top: 0;
+  left: -250px; /* Start off-screen */
+  width: 250px;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  transition: left 0.5s ease-in-out; /* Smooth slide-in effect */
+}
+
+#slideInDiv.slide-in {
+  left: 0; /* Move it into the viewport */
+}
+
+/* State when the div slides out (hidden) */
+#slideInDiv.slide-out {
+  left: -300px; /* Move it off-screen */
+}
