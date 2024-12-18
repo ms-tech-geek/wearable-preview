@@ -1,4 +1,4 @@
-import { Color3, Color4, DynamicTexture, Scene, Texture } from '@babylonjs/core'
+import { Color3, Color4, DynamicTexture, Scene, Texture, Vector3 } from '@babylonjs/core'
 import {
   PreviewConfig,
   PreviewType,
@@ -17,6 +17,7 @@ import { Asset, center, createScene } from './scene'
 import { isFacialFeature, isModel, isSuccesful } from './utils'
 import { loadWearable } from './wearable'
 import { createShaderMaterial } from './explorer-alpha-shader'
+import { createOutlineShaderMaterial } from './explorer-alpha-shader/OutlineShader'
 
 /**
  * Initializes Babylon, creates the scene and loads a list of wearables in it
@@ -54,6 +55,7 @@ function applyMaterialToMeshes(
 
     let texture
     let shaderMaterial = createShaderMaterial(scene, category + Date.now() + Math.random())
+    const outlineMaterial = createOutlineShaderMaterial(scene, 'outlineMaterial', new Color4(0, 0, 0, 1), 0.001);
 
     if (fileName === undefined) return
     const fileUrl = mappings[fileName]
@@ -108,8 +110,20 @@ function applyMaterialToMeshes(
     if (meshMap && typeof meshMap === 'object') {
       for (const mesh of Object.values(meshMap) as any) {
         if (mesh && mesh.material) {
+          const outlineMesh = mesh.clone(mesh.name + '_outline', null, true);
+          outlineMesh.material = outlineMaterial;
+          outlineMesh.material.backFaceCulling = false; 
+          outlineMesh.scaling = mesh.scaling.add(new Vector3(0.01, 0.01, 0.01));
+          outlineMesh.renderingGroupId = 0; 
+          mesh.renderingGroupId = 1; 
+          outlineMesh.scaling = new Vector3(1.05, 1, 1.025); 
+        
+          outlineMaterial.forceDepthWrite = true;
+          outlineMesh.isPickable = false;
+
           mesh.material = shaderMaterial
           mesh.computeBonesUsingShaders = false
+          scene.addMesh(outlineMesh);
           scene.addMesh(mesh)
         } else {
           console.warn('Mesh or material not found:', mesh)
